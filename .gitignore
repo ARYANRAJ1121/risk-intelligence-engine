@@ -1,0 +1,57 @@
+# ============================================================
+# Risk Intelligence Engine — .gitignore
+# ============================================================
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Data files (too large for Git)
+data/raw/*.csv
+data/raw/**/*.csv
+data/processed/
+data/external/*.csv
+*.parquet
+
+# Model artifacts (tracked via MLflow or DVC in production)
+models/*.pkl
+models/*.h5
+models/*.joblib
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Spark
+spark-warehouse/
+metastore_db/
+derby.log
+
+# Environment variables
+.env
+
+# Logs
+*.log
+
+# Reports (generated — regenerate with reports/generate_report.py)
+reports/*.pdf
