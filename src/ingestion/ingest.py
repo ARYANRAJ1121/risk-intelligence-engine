@@ -1,29 +1,3 @@
-"""
-ingest.py — PySpark Data Ingestion & Validation Module
-=======================================================
-WHY THIS EXISTS:
-    Raw data from Kaggle, Freddie Mac, and FRED arrives in inconsistent
-    formats — mixed types, nulls in critical columns, duplicate rows.
-    This module is the FIRST gate in the pipeline. It loads CSV files
-    into PySpark DataFrames with enforced schemas, validates data quality,
-    handles nulls with documented strategies, and removes duplicates.
-
-    In a Big 4 engagement, this is the 'Data Quality Assessment' phase
-    that precedes any modeling work. The output is a clean, validated
-    DataFrame that downstream modules can trust.
-
-WHAT IT RETURNS:
-    Clean PySpark DataFrames ready for feature engineering.
-
-HOW IT WORKS:
-    1. Initialize a local SparkSession
-    2. Read CSV with enforced schema (rejects type mismatches)
-    3. Drop rows where the TARGET column is null (can't train on unknowns)
-    4. Impute numeric nulls with column medians
-    5. Remove exact-duplicate rows
-    6. Log row counts at each stage for auditability
-"""
-
 import logging
 from typing import Optional
 
