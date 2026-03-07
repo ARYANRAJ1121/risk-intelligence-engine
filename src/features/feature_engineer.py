@@ -106,6 +106,19 @@ def engineer_lc_features(df: pd.DataFrame) -> pd.DataFrame:
                 len(df), len(df.columns))
     df = df.copy()
 
+    # ---- Bulk numeric conversion ---- #
+    # LendingClub data often arrives with numeric columns as strings
+    # (due to Spark inferSchema or mixed-type CSV parsing). Convert upfront.
+    numeric_cols = [
+        "loan_amnt", "funded_amnt", "int_rate", "installment", "annual_inc",
+        "dti", "delinq_2yrs", "open_acc", "pub_rec", "revol_bal",
+        "revol_util", "total_acc",
+    ]
+    for col in numeric_cols:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+    logger.info("Converted numeric columns from string types")
+
     # ---- Parse issue_d for loan vintage and time dimension ---- #
     df = _parse_issue_date(df)
 
@@ -217,6 +230,7 @@ def _create_delinquency_flags_lc(df: pd.DataFrame) -> pd.DataFrame:
         pd.DataFrame: DataFrame with new flag_delinq column.
     """
     if "delinq_2yrs" in df.columns:
+        df["delinq_2yrs"] = pd.to_numeric(df["delinq_2yrs"], errors="coerce").fillna(0)
         df["flag_delinq"] = (df["delinq_2yrs"] >= 1).astype(int)
         logger.info("Created 'flag_delinq' — %.1f%% positive",
                      df["flag_delinq"].mean() * 100)

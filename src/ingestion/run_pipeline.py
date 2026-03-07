@@ -1,3 +1,4 @@
+import io
 import sys
 import time
 import logging
@@ -19,17 +20,17 @@ def setup_logging() -> None:
     """
     Configure structured logging for the pipeline.
 
-    All pipeline stages log to both console and a timestamped log file
-    in the project's reports/ directory. This creates an audit trail
-    that can be attached to engagement deliverables.
+    Uses a UTF-8 StreamHandler to avoid Windows charmap encoding errors
+    with Unicode characters (arrows, dashes) in log messages.
     """
+    # Force UTF-8 output to handle Unicode log messages on Windows
+    utf8_stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+    handler = logging.StreamHandler(utf8_stdout)
+    handler.setFormatter(logging.Formatter(Config.LOG_FORMAT, datefmt=Config.LOG_DATE_FORMAT))
+
     logging.basicConfig(
         level=getattr(logging, Config.LOG_LEVEL),
-        format=Config.LOG_FORMAT,
-        datefmt=Config.LOG_DATE_FORMAT,
-        handlers=[
-            logging.StreamHandler(sys.stdout),
-        ],
+        handlers=[handler],
     )
 
 
