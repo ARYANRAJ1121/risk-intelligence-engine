@@ -1,0 +1,23 @@
+{
+  "RevolvingUtilizationOfUnsecuredLines": 0.081845,
+  "log_RevolvingUtilizationOfUnsecuredLines": 0.072468,
+  "total_delinquency_score": 0.071143,
+  "age": 0.02902,
+  "flag_90dpd": 0.025683,
+  "flag_30dpd": 0.022301,
+  "NumberOfTime30-59DaysPastDueNotWorse": 0.021933,
+  "NumberOfTimes90DaysLate": 0.021666,
+  "NumberOfOpenCreditLinesAndLoans": 0.017908,
+  "log_MonthlyIncome": 0.012815,
+  "NumberOfTime60-89DaysPastDueNotWorse": 0.012748,
+  "flag_60dpd": 0.01079,
+  "NumberRealEstateLoansOrLines": 0.009506,
+  "DebtRatio": 0.009179,
+  "log_DebtRatio": 0.008924,
+  "MonthlyIncome": 0.005064,
+  "NumberOfDependents": 0.00306,
+  "unemployment_rate": 0.0,
+  "gdp": 0.0,
+  "fed_funds_rate": 0.0,
+  "credit_card_delinq_rate": 0.0
+}
