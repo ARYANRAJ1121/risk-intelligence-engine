@@ -1,0 +1,124 @@
+{
+    "model_name": "GMSC PD Model — Random Forest Classifier",
+    "model_version": "1.0.0",
+    "model_type": "Binary Classification (Probability of Default)",
+    "framework": "scikit-learn 1.3+",
+    "created_date": "2026-03-10",
+    "author": "Risk Intelligence Engine — Auto-ML Pipeline",
+    "dataset": "Give Me Some Credit (GMSC) — Kaggle",
+    "intended_use": {
+        "primary": "Predict Probability of Default (PD) for consumer credit borrowers",
+        "secondary": "Feed PD into Basel III Expected Loss formula: EL = PD × LGD × EAD",
+        "users": [
+            "Credit Risk Analysts",
+            "Loan Officers",
+            "Model Validation Teams",
+            "Regulators"
+        ],
+        "out_of_scope": "Not designed for commercial/corporate lending or non-US markets"
+    },
+    "training_data": {
+        "source": "Kaggle — Give Me Some Credit (cs-training.csv)",
+        "total_rows": 150000,
+        "features_used": 20,
+        "target_variable": "SeriousDlqin2yrs",
+        "default_rate": "6.7%",
+        "class_imbalance_handling": "SMOTE (Synthetic Minority Oversampling) + class_weight='balanced'",
+        "split_strategy": "Stratified 70/15/15 (Train/Val/Test)",
+        "preprocessing": [
+            "StandardScaler normalization",
+            "Median imputation for missing values",
+            "Log1p transform on skewed features (MonthlyIncome, RevolvingUtilization, DebtRatio)",
+            "Delinquency outlier capping (values 96/98 → median)",
+            "Binary delinquency flags (30DPD, 60DPD, 90DPD)",
+            "Credit utilization bucketing",
+            "Total delinquency composite score"
+        ]
+    },
+    "model_architecture": {
+        "algorithm": "Random Forest Classifier",
+        "n_estimators": 200,
+        "max_depth": 10,
+        "min_samples_leaf": 50,
+        "class_weight": "balanced",
+        "random_state": 42,
+        "selection_criteria": "Highest AUC-ROC on held-out test set"
+    },
+    "performance_metrics": {
+        "auc_roc": 0.8687,
+        "gini_coefficient": 0.7375,
+        "ks_statistic": 0.5883,
+        "pr_auc": 0.4066,
+        "f1_score": 0.3582,
+        "accuracy": 0.8174,
+        "precision": 0.2342,
+        "recall": 0.7608,
+        "true_positives": 1142,
+        "true_negatives": 17174,
+        "false_positives": 3734,
+        "false_negatives": 359
+    },
+    "competing_models": {
+        "Logistic Regression": {
+            "auc_roc": 0.8644,
+            "ks": 0.5873
+        },
+        "XGBoost": {
+            "auc_roc": 0.8655,
+            "ks": 0.5803
+        },
+        "LightGBM": {
+            "auc_roc": 0.8621,
+            "ks": 0.5791
+        }
+    },
+    "top_features_shap": [
+        {
+            "feature": "RevolvingUtilizationOfUnsecuredLines",
+            "mean_shap": 0.0818
+        },
+        {
+            "feature": "log_RevolvingUtilizationOfUnsecuredLines",
+            "mean_shap": 0.0725
+        },
+        {
+            "feature": "total_delinquency_score",
+            "mean_shap": 0.0711
+        },
+        {
+            "feature": "age",
+            "mean_shap": 0.0290
+        },
+        {
+            "feature": "flag_90dpd",
+            "mean_shap": 0.0257
+        }
+    ],
+    "expected_loss_summary": {
+        "total_loans_evaluated": 22409,
+        "total_exposure": 336135000,
+        "total_expected_loss": 46569523,
+        "el_as_pct_of_ead": 13.85,
+        "average_pd": 0.3079,
+        "lgd_assumption": 0.45,
+        "fixed_ead_assumption": 15000
+    },
+    "limitations": [
+        "Trained on 2011-era US consumer credit data — may not generalize to other geographies or time periods",
+        "LGD and EAD are assumed constants (45% and $15K) — production systems should use loan-level estimates",
+        "Does not incorporate macroeconomic features in this version (Layer 4 adds stress testing)",
+        "Precision is low (23.4%) — the model favors recall to minimize missed defaults, which is correct for risk management but leads to more false alarms"
+    ],
+    "ethical_considerations": [
+        "Age is used as a predictive feature — must comply with Equal Credit Opportunity Act (ECOA)",
+        "No protected class variables (race, gender, religion) are used",
+        "SHAP explainability is provided for every prediction to meet SR 11-7 model risk management requirements",
+        "Model decisions should be reviewed by human underwriters — never used as sole decision-maker"
+    ],
+    "deployment": {
+        "model_file": "models/gmsc_pd_model.pkl",
+        "scaler_file": "models/gmsc_scaler.pkl",
+        "feature_names": "models/gmsc_feature_names.json",
+        "dashboard": "streamlit run dashboard/app.py"
+    }
+}
