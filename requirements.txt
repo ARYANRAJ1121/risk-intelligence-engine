@@ -30,7 +30,7 @@ shap>=0.43.0
 joblib>=1.3.0
 
 # --- Deep Learning (Layer 3 — will be activated) --- #
-tensorflow>=2.14.0
+torch>=2.0.0
 
 # --- Visualization --- #
 matplotlib>=3.7.0
