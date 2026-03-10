@@ -1,0 +1,10 @@
+{
+  "total_loans": 22409,
+  "total_ead": 336135000.0,
+  "total_expected_loss": 46569523.2,
+  "el_as_pct_of_ead": 13.8544,
+  "average_pd": 0.3079,
+  "median_pd": 0.223,
+  "lgd_assumption": 0.45,
+  "fixed_ead_assumption": 15000.0
+}

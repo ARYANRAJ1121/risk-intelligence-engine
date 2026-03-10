@@ -1,0 +1,62 @@
+{
+  "Logistic Regression": {
+    "auc_roc": 0.8644,
+    "gini": 0.7288,
+    "ks_statistic": 0.5808,
+    "pr_auc": 0.3873,
+    "f1_score": 0.3495,
+    "accuracy": 0.8095,
+    "true_positives": 1147,
+    "true_negatives": 16993,
+    "false_positives": 3915,
+    "false_negatives": 354,
+    "precision": 0.2266,
+    "recall": 0.7642,
+    "train_time_sec": 0.4
+  },
+  "Random Forest": {
+    "auc_roc": 0.8687,
+    "gini": 0.7375,
+    "ks_statistic": 0.5883,
+    "pr_auc": 0.4066,
+    "f1_score": 0.3582,
+    "accuracy": 0.8174,
+    "true_positives": 1142,
+    "true_negatives": 17174,
+    "false_positives": 3734,
+    "false_negatives": 359,
+    "precision": 0.2342,
+    "recall": 0.7608,
+    "train_time_sec": 9.88
+  },
+  "XGBoost": {
+    "auc_roc": 0.8593,
+    "gini": 0.7186,
+    "ks_statistic": 0.5695,
+    "pr_auc": 0.3733,
+    "f1_score": 0.4135,
+    "accuracy": 0.9289,
+    "true_positives": 562,
+    "true_negatives": 20253,
+    "false_positives": 655,
+    "false_negatives": 939,
+    "precision": 0.4618,
+    "recall": 0.3744,
+    "train_time_sec": 2.97
+  },
+  "LightGBM": {
+    "auc_roc": 0.8619,
+    "gini": 0.7239,
+    "ks_statistic": 0.5782,
+    "pr_auc": 0.3794,
+    "f1_score": 0.3574,
+    "accuracy": 0.9329,
+    "true_positives": 418,
+    "true_negatives": 20488,
+    "false_positives": 420,
+    "false_negatives": 1083,
+    "precision": 0.4988,
+    "recall": 0.2785,
+    "train_time_sec": 2.12
+  }
+}
