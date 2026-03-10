@@ -247,14 +247,15 @@ def get_models() -> dict:
     try:
         from xgboost import XGBClassifier
         models["XGBoost"] = XGBClassifier(
-            n_estimators=300,
+            n_estimators=500,
             max_depth=6,
-            learning_rate=0.1,
+            learning_rate=0.05,
             subsample=0.8,
             colsample_bytree=0.8,
             scale_pos_weight=1,  # SMOTE already balances
             use_label_encoder=False,
             eval_metric="logloss",
+            early_stopping_rounds=30,
             random_state=RANDOM_STATE,
             n_jobs=-1,
             verbosity=0,
@@ -266,9 +267,9 @@ def get_models() -> dict:
     try:
         from lightgbm import LGBMClassifier
         models["LightGBM"] = LGBMClassifier(
-            n_estimators=300,
+            n_estimators=500,
             max_depth=6,
-            learning_rate=0.1,
+            learning_rate=0.05,
             subsample=0.8,
             colsample_bytree=0.8,
             class_weight="balanced",
@@ -303,7 +304,27 @@ def train_all_models(data: dict) -> dict:
         logger.info("Training %s...", name)
         start = time.time()
 
-        model.fit(data["X_train"], data["y_train"])
+        # XGBoost/LightGBM support early stopping with a validation set
+        model_type = type(model).__name__
+        if model_type == "XGBClassifier":
+            model.fit(
+                data["X_train"], data["y_train"],
+                eval_set=[(data["X_val"], data["y_val"])],
+                verbose=False,
+            )
+            if hasattr(model, "best_iteration"):
+                logger.info("  Early stopped at iteration %d", model.best_iteration)
+        elif model_type == "LGBMClassifier":
+            from lightgbm import early_stopping, log_evaluation
+            model.fit(
+                data["X_train"], data["y_train"],
+                eval_set=[(data["X_val"], data["y_val"])],
+                callbacks=[early_stopping(30, verbose=False), log_evaluation(period=0)],
+            )
+            if hasattr(model, "best_iteration_"):
+                logger.info("  Early stopped at iteration %d", model.best_iteration_)
+        else:
+            model.fit(data["X_train"], data["y_train"])
 
         train_time = time.time() - start
         results[name] = {
@@ -346,14 +367,17 @@ def run_training_pipeline(dataset: str) -> dict:
     results = train_all_models(data)
 
     # Step 4: Evaluate (imported from evaluate.py)
-    from src.models.evaluate import evaluate_all_models, save_metrics
+    from src.models.evaluate import evaluate_all_models, save_metrics, generate_all_plots
     metrics = evaluate_all_models(results, data)
     save_metrics(metrics, dataset)
 
-    # Step 5: Find best model
+    # Step 4b: Find best model early so we can pass it to plot generation
     best_name = max(metrics, key=lambda k: metrics[k]["auc_roc"])
     best_model = results[best_name]["model"]
     best_auc = metrics[best_name]["auc_roc"]
+
+    # Step 4c: Generate all evaluation plots (ROC, PR, KS, CM, PD dist)
+    generate_all_plots(results, data, dataset, best_model, best_name)
 
     logger.info("=" * 70)
     logger.info("  BEST MODEL: %s (AUC-ROC = %.4f)", best_name, best_auc)

@@ -63,17 +63,13 @@ def compute_ks_statistic(y_true: np.ndarray, y_prob: np.ndarray) -> float:
     Returns:
         float: KS statistic
     """
+    from scipy.stats import ks_2samp
+
     default_probs = y_prob[y_true == 1]
     non_default_probs = y_prob[y_true == 0]
 
-    # Sort all probabilities and compute CDFs
-    all_probs = np.sort(np.concatenate([default_probs, non_default_probs]))
-
-    cdf_default = np.array([np.mean(default_probs <= p) for p in all_probs])
-    cdf_non_default = np.array([np.mean(non_default_probs <= p) for p in all_probs])
-
-    ks = np.max(np.abs(cdf_default - cdf_non_default))
-    return ks
+    ks_stat, _ = ks_2samp(default_probs, non_default_probs)
+    return ks_stat
 
 
 def evaluate_single_model(model, X_test, y_test, model_name: str) -> dict:
