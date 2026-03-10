@@ -1,0 +1,23 @@
+[
+  "RevolvingUtilizationOfUnsecuredLines",
+  "age",
+  "NumberOfTime30-59DaysPastDueNotWorse",
+  "DebtRatio",
+  "MonthlyIncome",
+  "NumberOfOpenCreditLinesAndLoans",
+  "NumberOfTimes90DaysLate",
+  "NumberRealEstateLoansOrLines",
+  "NumberOfTime60-89DaysPastDueNotWorse",
+  "NumberOfDependents",
+  "flag_30dpd",
+  "flag_60dpd",
+  "flag_90dpd",
+  "log_MonthlyIncome",
+  "log_RevolvingUtilizationOfUnsecuredLines",
+  "log_DebtRatio",
+  "total_delinquency_score",
+  "unemployment_rate",
+  "gdp",
+  "fed_funds_rate",
+  "credit_card_delinq_rate"
+]
