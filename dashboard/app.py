@@ -193,6 +193,18 @@ def load_shap_importance(dataset):
     return json.load(open(path)) if path.exists() else {}
 
 @st.cache_data
+def load_model_card(dataset):
+    path = ARTIFACTS_DIR / "model_cards" / f"{dataset}_model_card.json"
+    return json.load(open(path)) if path.exists() else {}
+
+@st.cache_data
+def load_validation_report(dataset):
+    path = ARTIFACTS_DIR / "reports" / f"{dataset}_validation_report.md"
+    if path.exists():
+        return path.read_text(encoding="utf-8")
+    return ""
+
+@st.cache_data
 def load_feature_data(dataset):
     from src.ingestion.config import Config
     path = Config.FEATURE_STORE_DIR / f"{dataset}_features.parquet"
@@ -359,6 +371,7 @@ with st.sidebar:
         "⚠️ Anomaly Radar",
         "📋 Risk Grid",
         "🔬 Data Explorer",
+        "📄 Governance",
     ], label_visibility="collapsed")
 
     st.markdown("---")
@@ -726,3 +739,112 @@ elif page == "🔬 Data Explorer":
     # Raw data preview
     st.markdown('<div class="section-title">📄 Raw Data Preview</div>', unsafe_allow_html=True)
     st.dataframe(df.head(100), use_container_width=True, hide_index=True)
+
+
+# ============================================================
+#  PAGE 7: GOVERNANCE (Model Card + Validation Report)
+# ============================================================
+
+elif page == "📄 Governance":
+    st.markdown("""
+    <div class="hero">
+        <h1>📄 Model Governance & Documentation</h1>
+        <p>Model Card • Validation Report • SR 11-7 Compliance</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    card = load_model_card(dataset)
+    report = load_validation_report(dataset)
+
+    if not card:
+        st.warning(f"No model card found for `{dataset}`.")
+        st.stop()
+
+    # ---- Model Identity ----
+    st.markdown('<div class="section-title">🪪 Model Identity</div>', unsafe_allow_html=True)
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.markdown(f"""<div class="glass-card">
+            <div style="color:rgba(255,255,255,0.5); font-size:0.75rem; text-transform:uppercase; letter-spacing:1px;">Model Name</div>
+            <div style="color:white; font-weight:600; font-size:1.1rem; margin-top:0.3rem;">{card.get('model_name', 'N/A')}</div>
+        </div>""", unsafe_allow_html=True)
+    with col2:
+        st.markdown(f"""<div class="glass-card">
+            <div style="color:rgba(255,255,255,0.5); font-size:0.75rem; text-transform:uppercase; letter-spacing:1px;">Version</div>
+            <div style="color:white; font-weight:600; font-size:1.1rem; margin-top:0.3rem;">{card.get('model_version', 'N/A')}</div>
+        </div>""", unsafe_allow_html=True)
+    with col3:
+        st.markdown(f"""<div class="glass-card">
+            <div style="color:rgba(255,255,255,0.5); font-size:0.75rem; text-transform:uppercase; letter-spacing:1px;">Created</div>
+            <div style="color:white; font-weight:600; font-size:1.1rem; margin-top:0.3rem;">{card.get('created_date', 'N/A')}</div>
+        </div>""", unsafe_allow_html=True)
+
+    # ---- Intended Use ----
+    intended = card.get("intended_use", {})
+    if intended:
+        st.markdown('<div class="section-title">🎯 Intended Use</div>', unsafe_allow_html=True)
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown(f"""<div class="glass-card">
+                <div style="color:#6C63FF; font-weight:600; margin-bottom:0.5rem;">Primary Purpose</div>
+                <div style="color:rgba(255,255,255,0.7);">{intended.get('primary', 'N/A')}</div>
+                <div style="color:#00D4AA; font-weight:600; margin-top:1rem; margin-bottom:0.5rem;">Secondary Purpose</div>
+                <div style="color:rgba(255,255,255,0.7);">{intended.get('secondary', 'N/A')}</div>
+            </div>""", unsafe_allow_html=True)
+        with col2:
+            users = intended.get('users', [])
+            users_html = ''.join([f'<span class="badge-ok" style="margin:3px;">{u}</span>' for u in users])
+            st.markdown(f"""<div class="glass-card">
+                <div style="color:#6C63FF; font-weight:600; margin-bottom:0.5rem;">Intended Users</div>
+                <div>{users_html}</div>
+                <div style="color:#FF6B6B; font-weight:600; margin-top:1rem; margin-bottom:0.5rem;">Out of Scope</div>
+                <div style="color:rgba(255,255,255,0.7);">{intended.get('out_of_scope', 'N/A')}</div>
+            </div>""", unsafe_allow_html=True)
+
+    # ---- Performance Snapshot ----
+    perf = card.get("performance_metrics", {})
+    if perf:
+        st.markdown('<div class="section-title">📊 Performance Snapshot</div>', unsafe_allow_html=True)
+        cols = st.columns(6)
+        perf_items = [
+            ("🎯", "AUC-ROC", f"{perf.get('auc_roc', 0):.4f}"),
+            ("📏", "Gini", f"{perf.get('gini_coefficient', 0):.4f}"),
+            ("📐", "KS", f"{perf.get('ks_statistic', 0):.4f}"),
+            ("🔎", "Precision", f"{perf.get('precision', 0):.4f}"),
+            ("📡", "Recall", f"{perf.get('recall', 0):.4f}"),
+            ("⚖️", "F1", f"{perf.get('f1_score', 0):.4f}"),
+        ]
+        for col, (icon, label, val) in zip(cols, perf_items):
+            with col:
+                st.markdown(f"""<div class="glass-card" style="text-align:center;">
+                    <div class="kpi-icon">{icon}</div>
+                    <div class="kpi-value" style="font-size:1.5rem;">{val}</div>
+                    <div class="kpi-label">{label}</div>
+                </div>""", unsafe_allow_html=True)
+
+    # ---- Limitations ----
+    limitations = card.get("limitations", [])
+    if limitations:
+        st.markdown('<div class="section-title">⚠️ Known Limitations</div>', unsafe_allow_html=True)
+        limits_html = ''.join([f'<div style="color:rgba(255,255,255,0.7); padding:0.5rem 0; border-bottom:1px solid rgba(255,255,255,0.05);">'  
+                               f'<span style="color:#FFD93D; margin-right:8px;">⚡</span>{lim}</div>' for lim in limitations])
+        st.markdown(f'<div class="glass-card">{limits_html}</div>', unsafe_allow_html=True)
+
+    # ---- Ethical Considerations ----
+    ethics = card.get("ethical_considerations", [])
+    if ethics:
+        st.markdown('<div class="section-title">🛡️ Ethical & Compliance</div>', unsafe_allow_html=True)
+        ethics_html = ''.join([f'<div style="color:rgba(255,255,255,0.7); padding:0.5rem 0; border-bottom:1px solid rgba(255,255,255,0.05);">'  
+                               f'<span style="color:#00D4AA; margin-right:8px;">✓</span>{eth}</div>' for eth in ethics])
+        st.markdown(f'<div class="glass-card">{ethics_html}</div>', unsafe_allow_html=True)
+
+    # ---- Full Validation Report ----
+    if report:
+        st.markdown('<div class="section-title">📋 Full Validation Report</div>', unsafe_allow_html=True)
+        with st.expander("Click to expand the full model validation report", expanded=False):
+            st.markdown(report)
+
+    # ---- Raw Model Card JSON ----
+    st.markdown('<div class="section-title">🔧 Raw Model Card (JSON)</div>', unsafe_allow_html=True)
+    with st.expander("Click to expand raw JSON", expanded=False):
+        st.json(card)
